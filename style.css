@@ -1,0 +1,296 @@
+/* ---------- Variabler ---------- */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #1c2430;
+  --ink-soft: #5d6877;
+  --line: #d3d9e2;
+  --key-bg: #dde2ea;
+
+  --correct: #2f9e63;
+  --present: #e0a526;
+  --absent: #6c7686;
+
+  --tile-size: clamp(46px, 13vw, 62px);
+  --gap: 6px;
+  --radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141a22;
+    --surface: #1d2530;
+    --ink: #eef1f5;
+    --ink-soft: #9aa5b5;
+    --line: #3a4554;
+    --key-bg: #3a4554;
+    --absent: #2b3340;
+  }
+}
+
+/* ---------- Grundlayout ---------- */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.game {
+  width: 100%;
+  max-width: 500px;
+  min-height: 100%;
+  padding: 12px 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ---------- Topbar ---------- */
+.topbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 10px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.btn {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.btn:hover { background: var(--key-bg); }
+
+/* ---------- Regler ---------- */
+.rules {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.rules summary {
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.rules summary:focus-visible {
+  outline: 3px solid var(--present);
+  outline-offset: 2px;
+}
+
+.rules-body {
+  padding: 0 14px 14px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.rules-body p { margin: 0 0 8px; }
+
+.rules-body ul {
+  margin: 0 0 12px;
+  padding-left: 1.2em;
+}
+
+.rules-body li + li { margin-top: 4px; }
+
+.rules-subtitle {
+  margin-top: 14px !important;
+  font-weight: 700;
+}
+
+.example { margin-bottom: 12px; }
+.example .row {
+  --tile-size: 40px;
+  margin-bottom: 6px;
+}
+.example .tile { font-size: 1.3rem; }
+
+/* ---------- Score ---------- */
+.stats {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+}
+.stat + .stat { border-left: 1px solid var(--line); }
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- Besked ---------- */
+.message {
+  min-height: 1.4em;
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ---------- Spillebræt ---------- */
+.board {
+  display: grid;
+  gap: var(--gap);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, var(--tile-size));
+  gap: var(--gap);
+}
+
+.tile {
+  width: var(--tile-size);
+  height: var(--tile-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--tile-size) * 0.55);
+  font-weight: 800;
+  text-transform: uppercase;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  user-select: none;
+}
+
+.tile.filled {
+  border-color: var(--ink-soft);
+  animation: pop 0.1s ease-out;
+}
+
+.tile.correct,
+.tile.present,
+.tile.absent {
+  color: #fff;
+  border-color: transparent;
+}
+
+.tile.correct { background: var(--correct); }
+.tile.present { background: var(--present); }
+.tile.absent  { background: var(--absent); }
+
+/* Til JS: tilføj .flip på en tile når den afsløres (sæt gerne animation-delay pr. tile) */
+.tile.flip { animation: flip 0.5s ease both; }
+
+.row.shake { animation: shake 0.4s; }
+
+@keyframes pop {
+  50% { transform: scale(1.08); }
+}
+
+@keyframes flip {
+  0%   { transform: rotateX(0); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
+
+@keyframes shake {
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* ---------- Tastatur ---------- */
+.keyboard {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kb-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 54px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--key-bg);
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.key-wide {
+  flex: 1.6 1 0;
+  font-size: 0.8rem;
+}
+
+.key:hover { filter: brightness(0.95); }
+.key:active { transform: translateY(1px); }
+
+.key.correct,
+.key.present,
+.key.absent { color: #fff; }
+
+.key.correct { background: var(--correct); }
+.key.present { background: var(--present); }
+.key.absent  { background: var(--absent); }
+
+/* ---------- Tilgængelighed ---------- */
+.key:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid var(--present);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .row { animation: none !important; }
+}
+
+/* Små skærme */
+@media (max-width: 380px) {
+  .key { height: 48px; font-size: 0.9rem; }
+  .kb-row { gap: 4px; }
+}

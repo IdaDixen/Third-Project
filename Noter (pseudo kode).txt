@@ -1,0 +1,22 @@
+Prerequisits: Nyt spil starter med nyt ord
+
+Hent statistik (win/loss/win-rate) fra localStorage
+Spil er igang så snart siden indlæses
+
+Hent ord ind, som skal gættes --> gemmes sessionStorage 
+Trykkes på et bogstav på tastaturet/knapperne vises bogstav i aktivt felt.
+Næste felt (til højre) er nu aktivt
+Ved fuld udfyldt række og 'enter'-tastes valideres svaret med farveændringer (ord skal være i ordbog). 
+Hvis vundet -> Afslut spil (Vundet)
+Ellers næste række er aktivt.
+ --> Forkert, brugte bogstaver markeres grå på tastaturet og korrekte, bogstaver grøn eller gul
+ --> Local storage af fuldført række
+ Hvis 6. række er forkert -> Afslut (Tabt)
+ Gem statistik (win/loss/win-rate) i localStorage
+
+
+
+Ord: Start med et ord. Næste gange udvider med fetch.
+Evt. attach/detach på tastatur-knapper
+Enter uden fyldt række -> Fejlbesked
+Evt. reset statistik
