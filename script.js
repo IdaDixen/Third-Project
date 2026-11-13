@@ -12,8 +12,6 @@ let currentRow = 0;
 let currentTile = 0;      
 let gameOver = false;
 let stats = { wins: 0, losses: 0 };
-const rows = document.querySelectorAll("#board .row")
-const getTile = (row, col) => rows[row].children[col]
 
 
 function init() {
@@ -94,7 +92,7 @@ function addLetter(letter) {
     return
   }
 
-  getTile(currentRow, currentTile).textContent = letter
+  getTileElement(currentRow, currentTile).textContent = letter
   currentTile++
 }
 
@@ -104,15 +102,19 @@ function removeLetter() {
     return 
   }
 
-  getTile(currentRow, currentTile).textContent = ""
+  getTileElement(currentRow, currentTile).textContent = ""
   currentTile--
 }
 
 // Hjælpefunktioner til at finde elementer i DOM
 function getCurrentRowElement() {
+  const rows = document.querySelectorAll("#board .row")
+  return rows[currentRow]
 }
 
 function getTileElement(rowIndex, tileIndex) {
+  const rows = document.querySelectorAll("#board .row")
+  return rows[rowIndex].children[tileIndex]
 }
 
 function getKeyElement(letter) {
