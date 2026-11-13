@@ -17,6 +17,13 @@ let stats = { wins: 0, losses: 0 };
 
 function init() {
   // Hent statistik, hent/vælg ord, genskab evt. rækker, sæt event listeners
+  secretWord = loadSecretWord()
+
+  if (secretWord === null) {
+    secretWord = pickRandomWord()
+    saveSecretWord(secretWord)
+  }
+
   updateStatsUI()
 }
 
@@ -64,10 +71,12 @@ function pickRandomWord() {
 
 // Gem ordet i sessionStorage
 function saveSecretWord(word) {
+  sessionStorage.setItem(STORAGE_KEYS.secretWord, word)
 }
 
 // Hent ordet fra sessionStorage (hvis det findes)
 function loadSecretWord() {
+  return sessionStorage.getItem(STORAGE_KEYS.secretWord)
 }
 
 // Samlet indgang for alle input (fysisk tast og skærmtast)
