@@ -12,6 +12,8 @@ let currentRow = 0;
 let currentTile = 0;      
 let gameOver = false;
 let stats = { wins: 0, losses: 0 };
+const rows = document.querySelectorAll("#board .row")
+const getTile = (row, col) => rows[row].children[col]
 
 
 function init() {
@@ -88,10 +90,22 @@ function handleKeyPress(key) {
 
 // Vis bogstav i det aktive felt og gør næste felt (til højre) aktivt
 function addLetter(letter) {
+  if (currentTile >= WORD_LENGTH - 1) {
+    return
+  }
+
+  getTile(currentRow, currentTile).textContent = letter
+  currentTile++
 }
 
 // Slet seneste bogstav og flyt aktivt felt et skridt tilbage
 function removeLetter() {
+  if (currentTile <= 0) {
+    return 
+  }
+
+  getTile(currentRow, currentTile).textContent = ""
+  currentTile--
 }
 
 // Hjælpefunktioner til at finde elementer i DOM
