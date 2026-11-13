@@ -17,6 +17,7 @@ let stats = { wins: 0, losses: 0 };
 
 function init() {
   // Hent statistik, hent/vælg ord, genskab evt. rækker, sæt event listeners
+  updateStatsUI()
 }
 
 function startNewGame() {
@@ -31,6 +32,8 @@ function setupEventListeners() {
 
 // Hent win/loss fra localStorage og gem i stats
 function loadStats() {
+  // TODO load stats og gem
+  updateStatsUI()
 }
 
 // Gem win/loss i localStorage
@@ -39,10 +42,16 @@ function saveStats() {
 
 // Udregn win-rate i procent ud fra stats
 function calculateWinRate() {
+  const total = stats.wins + stats.losses
+  if (total === 0) return 0
+  return Math.round(stats.wins / total * 100)
 }
 
 // Opdater #wins, #losses og #winrate i DOM
 function updateStatsUI() {
+  document.getElementById("wins").textContent = stats.wins
+  document.getElementById("losses").textContent = stats.losses
+  document.getElementById("winrate").textContent = calculateWinRate()
 }
 
 // Hent ordbogen med gyldige ord (fx fra en fil eller et array)
@@ -137,6 +146,7 @@ function nextRow() {
 // Afslut spil: opdater stats, gem, vis besked
 // won = true (vundet) eller false (tabt)
 function endGame(won) {
+  updateStatsUI()
 }
 
 // Vis tekst i #message (fx "Ikke et gyldigt ord", "Du vandt!")
