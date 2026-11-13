@@ -2,7 +2,6 @@ const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
 
 const STORAGE_KEYS = {
-  stats: "wordle-stats",       // localStorage: { wins, losses }
   rows: "wordle-rows",         // localStorage: fuldførte rækker
   secretWord: "wordle-word",   // sessionStorage: ordet der skal gættes
 };
@@ -39,12 +38,15 @@ function setupEventListeners() {
 
 // Hent win/loss fra localStorage og gem i stats
 function loadStats() {
-  // TODO load stats og gem
+  stats.wins = Number(localStorage.getItem("wins")) || 0
+  stats.losses = Number(localStorage.getItem("losses")) || 0
   updateStatsUI()
 }
 
 // Gem win/loss i localStorage
 function saveStats() {
+  localStorage.setItem("wins", stats.wins)
+  localStorage.setItem("losses", stats.losses)
 }
 
 // Udregn win-rate i procent ud fra stats
