@@ -258,11 +258,53 @@ function isRowComplete() {
 function getCurrentGuess() {}
 
 // Findes ordet i ordbogen?
-function isValidWord(word) {}
+function isValidWord(word) {
+  return wordList.includes(word);
+}
 
 // Sammenlign gæt med secretWord
 // Returnér en liste med "correct" / "present" / "absent" for hvert bogstav
-function evaluateGuess(guess) {}
+function evaluateGuess(guess) {
+  const resultOfGuessTiles = [];
+  const remainingLetters = [];
+
+  // Correct letter in the correct place
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    resultOfGuessTiles.push("absent");
+    remainingLetters.push(secretWord[i]);
+
+    if (guess[i] === secretWord[i]) {
+      resultOfGuessTiles[i] = "correct";
+      remainingLetters[i] = null;
+    }
+  }
+
+  // Correct letter in the wrong place
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (resultOfGuessTiles[i] !== "correct") {
+      for (let j = 0; j < WORD_LENGTH; j++) {
+        if (guess[i] === remainingLetters[j]) {
+          resultOfGuessTiles[i] = "present";
+          remainingLetters[j] = null;
+          break;
+        }
+      }
+    }
+  }
+
+  return resultOfGuessTiles;
+}
+
+// Er gættet lig med secretWord?
+function checkWin(guess) {
+  return guess === secretWord;
+}
+
+// Vis tekst i #message (fx "Ikke et gyldigt ord", "Du vandt!")
+function showMessage(text) {
+  const message = document.querySelector("#message");
+  message.textContent = text;
+}
 
 // Farv felterne i den aktive række efter resultatet fra evaluateGuess
 function colorRow(result) {}
