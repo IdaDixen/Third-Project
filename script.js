@@ -118,6 +118,9 @@ function getTileElement(rowIndex, tileIndex) {
 }
 
 function getKeyElement(letter) {
+  return document.querySelector(
+        `#keyboard .key[data-key="${letter}"]`
+    );
 }
 
 // Kaldes ved Enter: tjek at rækken er fuld, ordet er gyldigt, og vurdér gættet
@@ -148,6 +151,24 @@ function colorRow(result) {
 // Markér brugte bogstaver på tastaturet: grå (forkert), grøn eller gul
 // Husk: en tast der allerede er grøn må ikke nedgraderes til gul
 function updateKeyboard(guess, result) {
+  for (let i = 0; i < guess.length; i++) {
+
+        const letter = guess[i];
+        const status = result[i];
+        const key = getKeyElement(letter);
+
+        if (!key) continue;
+
+        // Grøn må aldrig overskrives
+        if (key.classList.contains("correct")) continue;
+
+        // Gul må ikke ændres til grå
+        if (key.classList.contains("present")
+            && status === "absent") continue;
+
+        key.classList.remove("correct", "present", "absent");
+        key.classList.add(status);
+    }
 }
 
 // Gem den fuldførte række i localStorage
