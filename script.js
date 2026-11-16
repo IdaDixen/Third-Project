@@ -2,28 +2,27 @@ const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
 
 const STORAGE_KEYS = {
-  rows: "wordle-rows",         // localStorage: fuldførte rækker
-  secretWord: "wordle-word",   // sessionStorage: ordet der skal gættes
+  rows: "wordle-rows", // localStorage: fuldførte rækker
+  secretWord: "wordle-word", // sessionStorage: ordet der skal gættes
 };
 
-let secretWord = "";       
-let wordList = [];         
-let currentRow = 0;        
-let currentTile = 0;      
+let secretWord = "";
+let wordList = [];
+let currentRow = 0;
+let currentTile = 0;
 let gameOver = false;
 let stats = { wins: 0, losses: 0 };
 
-
 function init() {
   // Hent statistik, hent/vælg ord, genskab evt. rækker, sæt event listeners
-  secretWord = loadSecretWord()
+  secretWord = loadSecretWord();
 
   if (secretWord === null) {
-    secretWord = pickRandomWord()
-    saveSecretWord(secretWord)
+    secretWord = pickRandomWord();
+    saveSecretWord(secretWord);
   }
 
-  updateStatsUI()
+  updateStatsUI();
 }
 
 function startNewGame() {
@@ -33,156 +32,182 @@ function startNewGame() {
 }
 
 // Lytter på fysisk tastatur, skærmtastatur og "Nyt spil"-knap
-function setupEventListeners() {
-}
+function setupEventListeners() {}
 
 // Hent win/loss fra localStorage og gem i stats
 function loadStats() {
-  stats.wins = Number(localStorage.getItem("wins")) || 0
-  stats.losses = Number(localStorage.getItem("losses")) || 0
-  updateStatsUI()
+  stats.wins = Number(localStorage.getItem("wins")) || 0;
+  stats.losses = Number(localStorage.getItem("losses")) || 0;
+  updateStatsUI();
 }
 
 // Gem win/loss i localStorage
 function saveStats() {
-  localStorage.setItem("wins", stats.wins)
-  localStorage.setItem("losses", stats.losses)
+  localStorage.setItem("wins", stats.wins);
+  localStorage.setItem("losses", stats.losses);
 }
 
 // Udregn win-rate i procent ud fra stats
 function calculateWinRate() {
-  const total = stats.wins + stats.losses
-  if (total === 0) return 0
-  return Math.round(stats.wins / total * 100)
+  const total = stats.wins + stats.losses;
+  if (total === 0) return 0;
+  return Math.round((stats.wins / total) * 100);
 }
 
 // Opdater #wins, #losses og #winrate i DOM
 function updateStatsUI() {
-  document.getElementById("wins").textContent = stats.wins
-  document.getElementById("losses").textContent = stats.losses
-  document.getElementById("winrate").textContent = calculateWinRate()
+  document.getElementById("wins").textContent = stats.wins;
+  document.getElementById("losses").textContent = stats.losses;
+  document.getElementById("winrate").textContent = calculateWinRate();
 }
 
 // Hent ordbogen med gyldige ord (fx fra en fil eller et array)
-function loadWordList() {
-}
+function loadWordList() {}
 
 // Vælg et tilfældigt ord fra ordlisten
-function pickRandomWord() {
-}
+function pickRandomWord() {}
 
 // Gem ordet i sessionStorage
 function saveSecretWord(word) {
-  sessionStorage.setItem(STORAGE_KEYS.secretWord, word)
+  sessionStorage.setItem(STORAGE_KEYS.secretWord, word);
 }
 
 // Hent ordet fra sessionStorage (hvis det findes)
 function loadSecretWord() {
-  return sessionStorage.getItem(STORAGE_KEYS.secretWord)
+  return sessionStorage.getItem(STORAGE_KEYS.secretWord);
 }
 
 // Samlet indgang for alle input (fysisk tast og skærmtast)
 // Skal sende videre til addLetter, removeLetter eller submitGuess
-function handleKeyPress(key) {
-}
+function handleKeyPress(key) {}
 
 // Vis bogstav i det aktive felt og gør næste felt (til højre) aktivt
 function addLetter(letter) {
   if (currentTile >= WORD_LENGTH - 1) {
-    return
+    return;
   }
 
-  getTileElement(currentRow, currentTile).textContent = letter
-  currentTile++
+  getTileElement(currentRow, currentTile).textContent = letter;
+  currentTile++;
 }
 
 // Slet seneste bogstav og flyt aktivt felt et skridt tilbage
 function removeLetter() {
   if (currentTile <= 0) {
-    return 
+    return;
   }
 
-  getTileElement(currentRow, currentTile).textContent = ""
-  currentTile--
+  getTileElement(currentRow, currentTile).textContent = "";
+  currentTile--;
 }
 
 // Hjælpefunktioner til at finde elementer i DOM
 function getCurrentRowElement() {
-  const rows = document.querySelectorAll("#board .row")
-  return rows[currentRow]
+  const rows = document.querySelectorAll("#board .row");
+  return rows[currentRow];
 }
 
 function getTileElement(rowIndex, tileIndex) {
-  const rows = document.querySelectorAll("#board .row")
-  return rows[rowIndex].children[tileIndex]
+  const rows = document.querySelectorAll("#board .row");
+  return rows[rowIndex].children[tileIndex];
 }
 
-function getKeyElement(letter) {
-}
-
-// Kaldes ved Enter: tjek at rækken er fuld, ordet er gyldigt, og vurdér gættet
-function submitGuess() {
-}
+function getKeyElement(letter) {}
 
 // Er alle 5 felter i den aktive række udfyldt?
-function isRowComplete() {
-}
+function isRowComplete() {}
+
+// Kaldes ved Enter: tjek at rækken er fuld, ordet er gyldigt, og vurdér gættet
+function submitGuess() {}
 
 // Læs ordet i den aktive række som en streng
 function getCurrentGuess() {
+  const row = getCurrentRowElement();
+  let guess = "";
+
+  for (const tile of row.children) {
+    guess += tile.textContent;
+  }
+
+  return guess;
 }
 
 // Findes ordet i ordbogen?
 function isValidWord(word) {
+  return wordList.includes(word);
 }
 
 // Sammenlign gæt med secretWord
 // Returnér en liste med "correct" / "present" / "absent" for hvert bogstav
 function evaluateGuess(guess) {
-}
+  const resultOfGuessTiles = [];
+  const remainingLetters = [];
 
-// Farv felterne i den aktive række efter resultatet fra evaluateGuess
-function colorRow(result) {
-}
+  // Correct letter in the correct place
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    resultOfGuessTiles.push("absent");
+    remainingLetters.push(secretWord[i]);
 
-// Markér brugte bogstaver på tastaturet: grå (forkert), grøn eller gul
-// Husk: en tast der allerede er grøn må ikke nedgraderes til gul
-function updateKeyboard(guess, result) {
-}
+    if (guess[i] === secretWord[i]) {
+      resultOfGuessTiles[i] = "correct";
+      remainingLetters[i] = null;
+    }
+  }
 
-// Gem den fuldførte række i localStorage
-function saveRow(guess, result) {
-}
+  // Correct letter in the wrong place
+  for (let i = 0; i < WORD_LENGTH; i++) {
+    if (resultOfGuessTiles[i] !== "correct") {
+      for (let j = 0; j < WORD_LENGTH; j++) {
+        if (guess[i] === remainingLetters[j]) {
+          resultOfGuessTiles[i] = "present";
+          remainingLetters[j] = null;
+          break;
+        }
+      }
+    }
+  }
 
-// Genskab tidligere rækker fra localStorage (hvis siden genindlæses)
-function restoreRows() {
+  return resultOfGuessTiles;
 }
 
 // Er gættet lig med secretWord?
 function checkWin(guess) {
-}
-
-// Var det sidste forsøg (6. række) uden at have vundet?
-function checkLoss() {
-}
-
-// Gør næste række aktiv og nulstil aktivt felt
-function nextRow() {
-}
-
-// Afslut spil: opdater stats, gem, vis besked
-// won = true (vundet) eller false (tabt)
-function endGame(won) {
-  updateStatsUI()
+  return guess === secretWord;
 }
 
 // Vis tekst i #message (fx "Ikke et gyldigt ord", "Du vandt!")
 function showMessage(text) {
+  const message = document.querySelector("#message");
+  message.textContent = text;
+}
+
+// Farv felterne i den aktive række efter resultatet fra evaluateGuess
+function colorRow(result) {}
+
+// Markér brugte bogstaver på tastaturet: grå (forkert), grøn eller gul
+// Husk: en tast der allerede er grøn må ikke nedgraderes til gul
+function updateKeyboard(guess, result) {}
+
+// Gem den fuldførte række i localStorage
+function saveRow(guess, result) {}
+
+// Genskab tidligere rækker fra localStorage (hvis siden genindlæses)
+function restoreRows() {}
+
+// Var det sidste forsøg (6. række) uden at have vundet?
+function checkLoss() {}
+
+// Gør næste række aktiv og nulstil aktivt felt
+function nextRow() {}
+
+// Afslut spil: opdater stats, gem, vis besked
+// won = true (vundet) eller false (tabt)
+function endGame(won) {
+  updateStatsUI();
 }
 
 // Ryst aktiv række (klassen .shake) ved ugyldigt ord eller for få bogstaver
-function shakeRow() {
-}
+function shakeRow() {}
 
 // ---------- Start spillet ---------- //
 init();
