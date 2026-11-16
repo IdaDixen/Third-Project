@@ -16,14 +16,22 @@ let stats = { wins: 0, losses: 0 };
 
 function init() {
   // Hent statistik, hent/vælg ord, genskab evt. rækker, sæt event listeners
-  secretWord = loadSecretWord()
+  loadWordList()
+    .then(() => {
+      secretWord = loadSecretWord()
 
-  if (secretWord === null) {
-    secretWord = pickRandomWord()
-    saveSecretWord(secretWord)
-  }
+      if (secretWord === null) {
+        secretWord = pickRandomWord()
+        saveSecretWord(secretWord)
+      }
 
   updateStatsUI()
+    })
+    .catch((error) => {
+      console.error("Kunne ikke starte spillet.", error)
+      document.getElementById("message").textContent =
+        "Spillet kunne ikke startes. Prøv at genindlæse siden."
+    })
 }
 
 function startNewGame() {
@@ -63,12 +71,38 @@ function updateStatsUI() {
   document.getElementById("winrate").textContent = calculateWinRate()
 }
 
-// Hent ordbogen med gyldige ord (fx fra en fil eller et array)
+// Hent ordbogen med gyldige ord fra filen
 function loadWordList() {
+  return fetch("5-letter-words.txt")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      return response.text()
+    })
+    .then((text) => {
+      wordList = text
+        .split(/\r?\n/)
+        .map((word) => word.trim().toUpperCase())
+        .filter((word) => word.length === WORD_LENGTH)
+
+      if (wordList.length === 0) {
+        throw new Error("Ordlisten indeholder ingen gyldige ord.")
+      }
+
+      return wordList
+    })
 }
 
 // Vælg et tilfældigt ord fra ordlisten
 function pickRandomWord() {
+  if (wordList.length === 0) {
+    throw new Error("Ordlisten er ikke indlæst.")
+  }
+
+  const randomIndex = Math.floor(Math.random() * wordList.length)
+  return wordList[randomIndex]
 }
 
 // Gem ordet i sessionStorage
