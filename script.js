@@ -255,7 +255,16 @@ function isRowComplete() {
   return Array.from(tiles).every((tile) => tile.textContent.trim() !== "");
 }
 // Læs ordet i den aktive række som en streng
-function getCurrentGuess() {}
+function getCurrentGuess() {
+  const row = getCurrentRowElement();
+  let guess = "";
+
+  for (const tile of row.children) {
+    guess += tile.textContent;
+  }
+
+  return guess;
+}
 
 // Findes ordet i ordbogen?
 function isValidWord(word) {
@@ -338,9 +347,6 @@ function saveRow(guess, result) {}
 // Genskab tidligere rækker fra localStorage (hvis siden genindlæses)
 function restoreRows() {}
 
-// Er gættet lig med secretWord?
-function checkWin(guess) {}
-
 // Var det sidste forsøg (6. række) uden at have vundet?
 function checkLoss() {}
 
@@ -352,9 +358,6 @@ function nextRow() {}
 function endGame(won) {
   updateStatsUI();
 }
-
-// Vis tekst i #message (fx "Ikke et gyldigt ord", "Du vandt!")
-function showMessage(text) {}
 
 // Ryst aktiv række (klassen .shake) ved ugyldigt ord eller for få bogstaver
 function shakeRow() {}
