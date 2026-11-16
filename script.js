@@ -15,14 +15,22 @@ let stats = { wins: 0, losses: 0 };
 
 function init() {
   // Hent statistik, hent/vælg ord, genskab evt. rækker, sæt event listeners
-  secretWord = loadSecretWord();
+  loadWordList()
+    .then(() => {
+      secretWord = loadSecretWord()
 
-  if (secretWord === null) {
-    secretWord = pickRandomWord();
-    saveSecretWord(secretWord);
-  }
+      if (secretWord === null) {
+        secretWord = pickRandomWord()
+        saveSecretWord(secretWord)
+      }
 
-  updateStatsUI();
+  updateStatsUI()
+    })
+    .catch((error) => {
+      console.error("Kunne ikke starte spillet.", error)
+      document.getElementById("message").textContent =
+        "Spillet kunne ikke startes. Prøv at genindlæse siden."
+    })
 }
 
 function startNewGame() {
@@ -32,7 +40,21 @@ function startNewGame() {
 }
 
 // Lytter på fysisk tastatur, skærmtastatur og "Nyt spil"-knap
-function setupEventListeners() {}
+function setupEventListeners() {
+  // Fysisk tastatur
+  document.addEventListener("keydown", (event) => {
+    handleKeyPress(event.key);
+  });
+
+  // Onscreen keyboard
+  const keys = document.querySelectorAll(".key");
+
+  keys.forEach((key) => {
+    key.addEventListener("click", () => {
+      handleKeyPress(key.dataset.key);
+    });
+  });
+}
 
 // Hent win/loss fra localStorage og gem i stats
 function loadStats() {
@@ -61,11 +83,39 @@ function updateStatsUI() {
   document.getElementById("winrate").textContent = calculateWinRate();
 }
 
-// Hent ordbogen med gyldige ord (fx fra en fil eller et array)
-function loadWordList() {}
+// Hent ordbogen med gyldige ord fra filen
+function loadWordList() {
+  return fetch("5-letter-words.txt")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      return response.text()
+    })
+    .then((text) => {
+      wordList = text
+        .split(/\r?\n/)
+        .map((word) => word.trim().toUpperCase())
+        .filter((word) => word.length === WORD_LENGTH)
+
+      if (wordList.length === 0) {
+        throw new Error("Ordlisten indeholder ingen gyldige ord.")
+      }
+
+      return wordList
+    })
+}
 
 // Vælg et tilfældigt ord fra ordlisten
-function pickRandomWord() {}
+function pickRandomWord() {
+  if (wordList.length === 0) {
+    throw new Error("Ordlisten er ikke indlæst.")
+  }
+
+  const randomIndex = Math.floor(Math.random() * wordList.length)
+  return wordList[randomIndex]
+}
 
 // Gem ordet i sessionStorage
 function saveSecretWord(word) {
@@ -79,15 +129,39 @@ function loadSecretWord() {
 
 // Samlet indgang for alle input (fysisk tast og skærmtast)
 // Skal sende videre til addLetter, removeLetter eller submitGuess
-function handleKeyPress(key) {}
-
-// Vis bogstav i det aktive felt og gør næste felt (til højre) aktivt
-function addLetter(letter) {
-  if (currentTile >= WORD_LENGTH - 1) {
+function handleKeyPress(key) {
+  if (gameOver) {
     return;
   }
 
-  getTileElement(currentRow, currentTile).textContent = letter;
+  key = key.toUpperCase();
+
+  if (key === "ENTER") {
+    submitGuess();
+    return;
+  }
+
+  if (key === "BACKSPACE") {
+    removeLetter();
+    return;
+  }
+
+  if (/^[A-ZÆØÅ]$/.test(key)) {
+    addLetter(key);
+  }
+}
+
+// Vis bogstav i det aktive felt og gør næste felt (til højre) aktivt
+function addLetter(letter) {
+  if (currentTile >= WORD_LENGTH) {
+    return;
+  }
+
+  const tile = getTileElement(currentRow, currentTile);
+
+  tile.textContent = letter;
+  tile.classList.add("filled");
+
   currentTile++;
 }
 
@@ -97,8 +171,12 @@ function removeLetter() {
     return;
   }
 
-  getTileElement(currentRow, currentTile).textContent = "";
   currentTile--;
+
+  const tile = getTileElement(currentRow, currentTile);
+
+  tile.textContent = "";
+  tile.classList.remove("filled");
 }
 
 // Hjælpefunktioner til at finde elementer i DOM
@@ -112,25 +190,72 @@ function getTileElement(rowIndex, tileIndex) {
   return rows[rowIndex].children[tileIndex];
 }
 
-function getKeyElement(letter) {}
-
-// Er alle 5 felter i den aktive række udfyldt?
-function isRowComplete() {}
+function getKeyElement(letter) {
+  return document.querySelector(
+        `#keyboard .key[data-key="${letter}"]`
+    );
+}
 
 // Kaldes ved Enter: tjek at rækken er fuld, ordet er gyldigt, og vurdér gættet
-function submitGuess() {}
-
-// Læs ordet i den aktive række som en streng
-function getCurrentGuess() {
-  const row = getCurrentRowElement();
-  let guess = "";
-
-  for (const tile of row.children) {
-    guess += tile.textContent;
+function submitGuess() {
+  // Kontrollér om alle felter er udfyldt
+  if (!isRowComplete()) {
+    showMessage("Du skal udfylde alle 5 felter!");
+    shakeRow();
+    return;
   }
 
-  return guess;
+  // Hent spillerens gæt
+  const guess = getCurrentGuess();
+
+  // Kontrollér om ordet er gyldigt
+  if (!isValidWord(guess)) {
+    showMessage("Det er ikke et gyldigt ord!");
+    shakeRow();
+    return;
+  }
+
+  // Sammenlign gættet med det hemmelige ord
+  const result = evaluateGuess(guess);
+
+  // Farv felterne
+  colorRow(result);
+
+  // Opdater tastaturets farver
+  updateKeyboard(guess, result);
+
+  // Gem rækken
+  saveRow(guess, result);
+
+  // Kontrollér om spilleren har vundet
+  if (checkWin(guess)) {
+    endGame(true);
+    showMessage("Tillykke! Du har gættet ordet!");
+    return;
+  }
+
+  // Kontrollér om spilleren har brugt alle forsøg
+  if (checkLoss()) {
+    endGame(false);
+    showMessage(`Du tabte! Ordet var ${secretWord.toUpperCase()}`);
+    return;
+  }
+
+  // Gå videre til næste række
+  nextRow();
+
+  showMessage("");
 }
+
+// Er alle 5 felter i den aktive række udfyldt?
+function isRowComplete() {
+  const row = getCurrentRowElement();
+  const tiles = row.querySelectorAll(".tile");
+
+  return Array.from(tiles).every((tile) => tile.textContent.trim() !== "");
+}
+// Læs ordet i den aktive række som en streng
+function getCurrentGuess() {}
 
 // Findes ordet i ordbogen?
 function isValidWord(word) {
@@ -186,13 +311,35 @@ function colorRow(result) {}
 
 // Markér brugte bogstaver på tastaturet: grå (forkert), grøn eller gul
 // Husk: en tast der allerede er grøn må ikke nedgraderes til gul
-function updateKeyboard(guess, result) {}
+function updateKeyboard(guess, result) {
+  for (let i = 0; i < guess.length; i++) {
+
+        const letter = guess[i];
+        const status = result[i];
+        const key = getKeyElement(letter);
+
+        if (!key) continue;
+
+        // Grøn må aldrig overskrives
+        if (key.classList.contains("correct")) continue;
+
+        // Gul må ikke ændres til grå
+        if (key.classList.contains("present")
+            && status === "absent") continue;
+
+        key.classList.remove("correct", "present", "absent");
+        key.classList.add(status);
+    }
+}
 
 // Gem den fuldførte række i localStorage
 function saveRow(guess, result) {}
 
 // Genskab tidligere rækker fra localStorage (hvis siden genindlæses)
 function restoreRows() {}
+
+// Er gættet lig med secretWord?
+function checkWin(guess) {}
 
 // Var det sidste forsøg (6. række) uden at have vundet?
 function checkLoss() {}
@@ -205,6 +352,9 @@ function nextRow() {}
 function endGame(won) {
   updateStatsUI();
 }
+
+// Vis tekst i #message (fx "Ikke et gyldigt ord", "Du vandt!")
+function showMessage(text) {}
 
 // Ryst aktiv række (klassen .shake) ved ugyldigt ord eller for få bogstaver
 function shakeRow() {}
